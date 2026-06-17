@@ -22,6 +22,7 @@ menu hides an attempt until its clue is in hand, so the stub never strands in
 the Located state.
 """
 import importlib
+import os
 import re
 import sys
 from pathlib import Path
@@ -36,11 +37,43 @@ HERE = Path(__file__).parent
 _VERBOSE = False
 _STEP = [0]
 
+# ANSI colour-coding for the move narration, by category. Enabled only on a real
+# terminal (so a redirected log stays plain text). On Windows, os.system("")
+# turns on the console's ANSI/VT processing.
+_USE_COLOR = sys.stdout.isatty()
+if _USE_COLOR and os.name == "nt":
+    os.system("")
+_COLORS = {
+    "walk": "\033[90m",   # grey  -- walking card to card
+    "item": "\033[93m",   # yellow-- picked up an item (a page)
+    "clue": "\033[94m",   # blue  -- saw / read a clue
+    "book": "\033[92m",   # green -- used a linking book to travel between ages
+}
+_RESET = "\033[0m"
 
-def _log(msg: str) -> None:
+
+def _color(s: str, kind: str) -> str:
+    c = _COLORS.get(kind, "") if _USE_COLOR else ""
+    return f"{c}{s}{_RESET}" if c else s
+
+
+def _classify(label: str) -> str:
+    """Category for a player action label -> colour key (default 'action')."""
+    low = label.lower()
+    if "pick up" in low:
+        return "item"
+    if ("clue" in low or "catherine" in low or "fireplace combination" in low
+            or "journal" in low):
+        return "clue"
+    if "linking book" in low:
+        return "book"
+    return "action"
+
+
+def _log(msg: str, kind: str = "action") -> None:
     if _VERBOSE:
         _STEP[0] += 1
-        print(f"  [{_STEP[0]:4}] {msg}")
+        print(_color(f"  [{_STEP[0]:4}] {msg}", kind))
 
 
 def _say(msg: str) -> None:
@@ -115,7 +148,110 @@ SOLUTION = {
         ("PressKeyboardKey4", "play sound key 4"),
         ("PressKeyboardKey5", "play sound key 5"),
         ("PullTheLever", "pull the lever -- the Selenitic book appears")],
+    # Selenitic INTERIOR sub-games (not access stubs -- run as gates on the descent).
+    "SoundGame": [
+        ("DrippingWater", "light the dripping-water symbol (blue page nearby)"),
+        ("FissureSymbol", "light the fissure symbol"),
+        ("ClockSymbol", "light the clock symbol"),
+        ("CrystalSymbol", "light the crystal symbol (red page on top)"),
+        ("TunnelSymbol", "light the tunnel symbol"),
+        ("FlipTheTunnelLight", "flip the tunnel light switch"),
+        ("AimTheWaterReceiver", "aim the display: water receiver -> its sound"),
+        ("AimTheFissureReceiver", "aim the display: fissure receiver -> its sound"),
+        ("AimTheClockReceiver", "aim the display: clock receiver -> its sound"),
+        ("AimTheCrystalReceiver", "aim the display: crystal receiver -> its sound"),
+        ("AimTheTunnelReceiver", "aim the display: tunnel receiver -> its sound"),
+        ("PressSigma", "press Sigma -> playback order: crystal,water,tunnel,fissure,clock"),
+        ("SetSlider1", "slider 1 = crystal"),
+        ("SetSlider2", "slider 2 = water"),
+        ("SetSlider3", "slider 3 = tunnel"),
+        ("SetSlider4", "slider 4 = fissure"),
+        ("SetSlider5", "slider 5 = clock"),
+        ("VesselDoorOpens", "press the button -- the vessel door opens")],
+    "MazeGame": [(d, f"ride {d}") for d in
+                 ["North", "West", "North", "East", "East", "South", "South", "West",
+                  "Southwest", "West", "Northwest", "Northeast", "North", "Southeast"]],
+    # Channelwood INTERIOR sub-game (gates the return book) -- the windmill/valve
+    # network: faucet -> windmill power -> set the four routing valves -> route to
+    # the first elevator (upper village) -> re-route to the bridge -> crank the pipe
+    # -> re-route to the final elevator -> ride up to the Myst linking book.
+    "ChannelwoodGame": [
+        ("TurnTheFaucet", "turn the faucet -- water flows from the windmill"),
+        ("TheWindmillTurns", "the windmill turns -- the pipes have power"),
+        ("SetTheFirstValve", "valve 1: cover the line to the spiral staircase"),
+        ("SetTheSecondValve", "valve 2: water flows right"),
+        ("SetTheThirdValve", "valve 3: water flows right"),
+        ("SetTheFourthValve", "valve 4: water flows left"),
+        ("RouteTheWaterToTheFirstElevator", "route the water to the first elevator"),
+        ("RideTheFirstElevatorUp", "ride the first elevator up to the upper village"),
+        ("PullTheHutLever", "pull the hut lever, descend the powered stairway (the red page is in the desk drawer -- carried out one at a time)"),
+        ("RideTheFirstElevatorBackDown", "ride the first elevator back down"),
+        ("ReRouteTheWaterToTheBridge", "re-route the water to the bridge machine"),
+        ("PullTheBridgeLever", "pull the lever -- the bridge rises -- and cross"),
+        ("TurnTheCrank", "turn the crank to extend the final pipe to the far side"),
+        ("ReRouteTheWaterToTheFinalElevator", "re-route the water to the final elevator"),
+        ("RideTheFinalElevatorUp", "ride the final elevator up to the Myst linking book")],
+    # Stoneship INTERIOR sub-game (gates the return book) -- the lighthouse/battery:
+    # telescope bearing -> drain the lighthouse + the chest air/refloat/key -> padlock
+    # + trapdoor -> crank the generator six turns -> drain the rock -> both dark tunnels
+    # -> the SE compass press -> drain the ship deck -> the linking book rises.
+    "StoneshipGame": [
+        ("ReadTheLighthouseBearing", "read the telescope -- the lighthouse is at 135 degrees"),
+        ("PressTheRightUmbrellaButton", "right umbrella button -- drain the lighthouse stairs"),
+        ("DescendTheLighthouse", "descend, turn the chest valve to trap its air"),
+        ("PressTheRightUmbrellaButtonAgain", "right button again -- refill, the chest floats up"),
+        ("OpenTheFloatedChest", "open the chest, take the key"),
+        ("UnlockThePadlock", "unlock the padlock with the key"),
+        ("OpenTheTrapdoor", "open the trapdoor, climb to the generator"),
+        ("CrankTheGenerator", "crank the generator (rotation 1)"),
+        ("CrankTheGenerator", "crank the generator (rotation 2)"),
+        ("CrankTheGenerator", "crank the generator (rotation 3)"),
+        ("CrankTheGenerator", "crank the generator (rotation 4)"),
+        ("CrankTheGenerator", "crank the generator (rotation 5)"),
+        ("CrankTheGenerator", "crank the generator (rotation 6)"),
+        ("TheBatteriesAreFull", "the batteries are full -- the lights have power"),
+        ("PressTheMiddleUmbrellaButton", "middle umbrella button -- drain the rock, enter the tunnels"),
+        ("GoDownATunnel", "tunnel 1: go down by the battery's light (blue page on Achenar's bed -- carried out one at a time)"),
+        ("GoDownATunnel", "tunnel 2: go down by the battery's light (red page in Sirrus's drawer)"),
+        ("PressTheCompassRoseSoutheastButton", "compass-rose: press SOUTHEAST (135 degrees)"),
+        ("PressTheLeftUmbrellaButton", "left umbrella button -- drain the ship deck, the book rises")],
+    "FortressGame": [
+        ("EnterTheFortress", "enter the fortress, explore the throne rooms"),
+        ("StudyTheImager", "study the imager -- learn the sound->direction key"),
+        ("LowerTheHallwayStairs", "lower the hallway stairs + work the lever"),
+        ("RideTheElevator", "ride the elevator up"),
+        ("PressTheDownButton", "press the DOWN button"),
+        ("SlipOutBefore", "slip out before the car drops -- now on the roof controls (the trick!)"),
+        ("Position0", "note the symbol at position 0"),
+        ("RotateToTheNext", "rotate the fortress"),
+        ("Position1", "note the symbol at position 1"),
+        ("RotateToTheNext", "rotate the fortress"),
+        ("Position2", "note the symbol at position 2"),
+        ("RotateToTheNext", "rotate the fortress"),
+        ("Position3", "note the symbol at position 3"),
+        ("LockTheFortress", "orient the fortress SOUTH (the heading the symbols point to)"),
+        ("SetTheFinalPodium", "set the final podium to match the symbols seen at the other positions"),
+        ("PressTheRedButton", "press the red button -- the linking-book stairs descend")],
 }
+
+# Selenitic interior gates: walking INTO this card first requires the host to run
+# these sub-games (bindir, appclass, solved_state). The sound puzzle opens the
+# maze-hut door; the maze is then ridden. Tracked in _solved_gates so each fires once.
+INTERIOR_GATES = {
+    # Selenitic: the maze-hut door -- sound puzzle opens the vessel, then ride the maze.
+    "MainPath3NopenC1082": [("bin-puzzles/sound", "SoundGame", "Open"),
+                            ("bin-puzzles/maze", "MazeGame", "Book")],
+    # Mechanical: the return book -- rotate the fortress (elevator trick + 4 symbols) first.
+    "SouthStairs3NOpenC558": [("bin-puzzles/fortress", "FortressGame", "Done")],
+    # Channelwood: the return book -- run the windmill/valve network (route the water
+    # through the four valves, work the upper village, cross the bridge, crank the pipe)
+    # to ride the final elevator up before you can reach the linking book.
+    "VillageBookRoom1nBookopenC11": [("bin-puzzles/channelwood", "ChannelwoodGame", "RodeElevator")],
+    # Stoneship: the return book -- the lighthouse/battery puzzle (telescope, drain, key,
+    # crank, both tunnels, the SE compass press) must reach Recovered before the linking book.
+    "BookRoomBookopenC1327": [("bin-puzzles/stoneship", "StoneshipGame", "Recovered")],
+}
+_solved_gates: set = set()
 
 
 def settle(app) -> None:
@@ -187,11 +323,19 @@ def _pvars(comp) -> str:
     return " ".join(f"{k}={v}" for k, v in vs.items())
 
 
-def run_subgame(bindir: str, appclass: str, script=None) -> bool:
-    """Drive the mini-puzzle's own app to its Open state. script=list of
+def _match(sub, needle):
+    """Find an enabled transition for needle: exact event-name match first (so the
+    maze's 'North' doesn't also match 'Northwest'), then substring fallback (for
+    needles like 'PressThe22' that are name prefixes)."""
+    return (next(((n, t) for n, _, t in sub._enabled() if t.name.split("_", 1)[-1] == needle), None)
+            or next(((n, t) for n, _, t in sub._enabled() if needle in t.name), None))
+
+
+def run_subgame(bindir: str, appclass: str, script=None, solved_state: str = "Open") -> bool:
+    """Drive the mini-puzzle's own app to its solved state. script=list of
     (name-substring, label) pairs drives it headless (returns True on solve),
-    printing each move and the resulting digit state; otherwise a little REPL
-    lets the player solve it. Reaching Open trips the model's NeverSolved canary
+    printing each move and the resulting state; otherwise a little REPL lets the
+    player solve it. Reaching the solved state trips the model's NeverSolved canary
     -- we catch that as the win."""
     App = _sub_app(bindir, appclass)
     sub = App()
@@ -199,22 +343,22 @@ def run_subgame(bindir: str, appclass: str, script=None) -> bool:
 
     if script is not None:
         for needle, label in script:
-            if P.state == "Open":
+            if P.state == solved_state:
                 break
-            hit = next(((n, t) for n, _, t in sub._enabled() if needle in t.name), None)
+            hit = _match(sub, needle)
             if not hit:
                 print(f"    [auto] move {needle!r} unavailable at state {P.state}")
                 return False
             try:
                 sub.fire(hit[0])
-            except App.InvariantViolation:           # canary realized = Open reached
-                _say(f"- {label:<42} -> [Open] {_pvars(P)}")
+            except App.InvariantViolation:           # canary realized = solved reached
+                _say(f"- {label:<42} -> [{solved_state}] {_pvars(P)}")
                 return True
             _say(f"- {label:<42} -> [{P.state}] {_pvars(P)}")
-        return P.state == "Open"
+        return P.state == solved_state
 
     print(f"    --- {appclass}: solve it ('q' to give up) ---")
-    while P.state != "Open":
+    while P.state != solved_state:
         shown = {k: v for k, v in vars(P).items() if not k.startswith("_")
                  and k not in ("state", "initial_state", "state_constants")}
         print(f"    [{P.state}] {shown}")
@@ -344,6 +488,9 @@ def main() -> int:
         name, _, t = opts[int(raw)]
         if is_imager(t):
             do_imager(app, name, t)
+        elif t.to_state in INTERIOR_GATES:
+            if pass_gate(app, t.to_state, interactive=True):
+                app.fire(name)
         else:
             app.fire(name)
 
@@ -458,10 +605,27 @@ def _bfs(adj, start, goal, blocked):
     return None
 
 
+def pass_gate(app, card, interactive=True) -> bool:
+    """A card may be gated by interior host puzzles (Selenitic: the sound puzzle
+    opens the maze-hut door, then you ride the maze). Run them once before entering.
+    Returns False only if a sub-game is left unsolved (interactive give-up)."""
+    for bindir, appclass, solved in INTERIOR_GATES.get(card, []):
+        if appclass in _solved_gates:
+            continue
+        _say(f"--- the host runs {appclass} (its own verified model) ---")
+        script = None if interactive else SOLUTION[appclass]
+        if not run_subgame(bindir, appclass, script, solved):
+            return False
+        _solved_gates.add(appclass)
+    return True
+
+
 def goto(app, target, adj) -> None:
     """Walk/link the player to target, BFS over the live model. An edge that is
     not currently enabled (e.g. an age link before its puzzle is solved) gets
-    blocked and the route is recomputed -- so goto only ever fires real moves."""
+    blocked and the route is recomputed -- so goto only ever fires real moves.
+    Interior gates (e.g. the Selenitic maze-hut door) run their host sub-games
+    before the player may pass."""
     blocked = set()
     for _ in range(4000):
         here = app._components["PL"].state
@@ -470,11 +634,19 @@ def goto(app, target, adj) -> None:
         path = _bfs(adj, here, target, blocked)
         if not path or len(path) < 2:
             raise RuntimeError(f"no route {here} -> {target} (blocked {len(blocked)})")
-        if N._fire_to(app, path[1]):
-            _log(f"walk -> {N.pretty(path[1])}")
+        nxt = path[1]
+        if nxt in INTERIOR_GATES and not pass_gate(app, nxt, interactive=False):
+            blocked.add((here, nxt))
+            continue
+        if N._fire_to(app, nxt):
+            ev = N.EVENT.get((here, nxt), "")
+            if ev.startswith("walks to"):
+                _log(f"walk -> {N.pretty(nxt)}", "walk")
+            else:                                  # a linking book between ages
+                _log(f"link -> {N.pretty(nxt)}  ({ev})", "book")
             settle(app)
         else:
-            blocked.add((here, path[1]))           # edge not enabled now
+            blocked.add((here, nxt))               # edge not enabled now
     raise RuntimeError(f"goto {target} did not converge")
 
 
@@ -482,7 +654,7 @@ def act(app, needle: str) -> None:
     nd = N._norm(needle)
     for n, label, _t in N.moves(app):
         if nd in N._norm(label):
-            _log(f"** {label} **")
+            _log(f"** {label} **", _classify(label))
             app.fire(n)
             settle(app)
             return
@@ -509,7 +681,13 @@ def autowin(app) -> int:
     global _VERBOSE
     _VERBOSE = True
     _STEP[0] = 0
+    _solved_gates.clear()
     adj = _move_graph()
+
+    print("Legend:  " + _color("walk", "walk") + "   "
+          + _color("picked up a page", "item") + "   "
+          + _color("read a clue", "clue") + "   "
+          + _color("linked between ages (book)", "book"))
 
     def banner(s):
         print(f"\n--- {s} ---")
@@ -537,6 +715,12 @@ def autowin(app) -> int:
     for age, card in CLUE_STEPS:
         goto(app, card, adj)
         act(app, f"read the {age} clue")
+
+    banner("Read the four journals on the library bookshelf (the solution clues)")
+    goto(app, "Library1NC773", adj)
+    for age, _card in CLUE_STEPS:
+        act(app, f"read the {age} journal")
+    act(app, "read the Pattern Book")            # the fifth shelf book (fireplace pattern)
 
     for age, gate, stub, pagecard in AGE_STEPS:
         banner(f"{age}: attempt -> HOST runs the sub-game -> grab the page -> deposit")

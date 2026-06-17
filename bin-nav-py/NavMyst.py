@@ -54,20 +54,40 @@ class NavMyst(Application):
         return f"ClueMechanical_{self._components['ClueMechanical'].state}"
 
     @property
+    def journalMechanical_clueState(self) -> str:
+        return f"JournalMechanical_{self._components['JournalMechanical'].state}"
+
+    @property
     def clueStoneship_clueState(self) -> str:
         return f"ClueStoneship_{self._components['ClueStoneship'].state}"
+
+    @property
+    def journalStoneship_clueState(self) -> str:
+        return f"JournalStoneship_{self._components['JournalStoneship'].state}"
 
     @property
     def clueChannelwood_clueState(self) -> str:
         return f"ClueChannelwood_{self._components['ClueChannelwood'].state}"
 
     @property
+    def journalChannelwood_clueState(self) -> str:
+        return f"JournalChannelwood_{self._components['JournalChannelwood'].state}"
+
+    @property
     def clueSelenitic_clueState(self) -> str:
         return f"ClueSelenitic_{self._components['ClueSelenitic'].state}"
 
     @property
+    def journalSelenitic_clueState(self) -> str:
+        return f"JournalSelenitic_{self._components['JournalSelenitic'].state}"
+
+    @property
     def fireplaceCombo_clueState(self) -> str:
         return f"FireplaceCombo_{self._components['FireplaceCombo'].state}"
+
+    @property
+    def patternBook_clueState(self) -> str:
+        return f"PatternBook_{self._components['PatternBook'].state}"
 
     @property
     def noteClue_clueState(self) -> str:
@@ -182,20 +202,40 @@ class NavMyst(Application):
         return self._channel_phase(self._components['PL'], 'READ_Mechanical')
 
     @property
+    def pLREADJOURNAL_MechanicalToJournalMechanicalLOOK(self) -> str:
+        return self._channel_phase(self._components['PL'], 'READJOURNAL_Mechanical')
+
+    @property
     def pLREAD_StoneshipToClueStoneshipLOOK(self) -> str:
         return self._channel_phase(self._components['PL'], 'READ_Stoneship')
+
+    @property
+    def pLREADJOURNAL_StoneshipToJournalStoneshipLOOK(self) -> str:
+        return self._channel_phase(self._components['PL'], 'READJOURNAL_Stoneship')
 
     @property
     def pLREAD_ChannelwoodToClueChannelwoodLOOK(self) -> str:
         return self._channel_phase(self._components['PL'], 'READ_Channelwood')
 
     @property
+    def pLREADJOURNAL_ChannelwoodToJournalChannelwoodLOOK(self) -> str:
+        return self._channel_phase(self._components['PL'], 'READJOURNAL_Channelwood')
+
+    @property
     def pLREAD_SeleniticToClueSeleniticLOOK(self) -> str:
         return self._channel_phase(self._components['PL'], 'READ_Selenitic')
 
     @property
+    def pLREADJOURNAL_SeleniticToJournalSeleniticLOOK(self) -> str:
+        return self._channel_phase(self._components['PL'], 'READJOURNAL_Selenitic')
+
+    @property
     def pLREAD_DunnyToFireplaceComboLOOK(self) -> str:
         return self._channel_phase(self._components['PL'], 'READ_Dunny')
+
+    @property
+    def pLREADPATTERNToPatternBookLOOK(self) -> str:
+        return self._channel_phase(self._components['PL'], 'READPATTERN')
 
     @property
     def pLREAD_NOTEToNoteClueLOOK(self) -> str:
@@ -281,8 +321,8 @@ class NavMyst(Application):
     def pLATRUS_ADDToAtrusPAGE_IN(self) -> str:
         return self._channel_phase(self._components['PL'], 'ATRUS_ADD')
 
-    _tla_state_vars: tuple[str, ...] = ('pL_egoState', 'mechanicalPuz_puzzleState', 'stoneshipPuz_puzzleState', 'channelwoodPuz_puzzleState', 'seleniticPuz_puzzleState', 'dunnyPuz_puzzleState', 'clueMechanical_clueState', 'clueStoneship_clueState', 'clueChannelwood_clueState', 'clueSelenitic_clueState', 'fireplaceCombo_clueState', 'noteClue_clueState', 'switchDock_switchState', 'switchCabin_switchState', 'switchClock_switchState', 'switchGears_switchState', 'switchSpaceShip_switchState', 'switchGenerator_switchState', 'switchTree_switchState', 'switchPlanetarium_switchState', 'towerRevealed_clueState', 'hands_handsState', 'pageSirrusMechanical_itemState', 'pageSirrusStoneship_itemState', 'pageSirrusChannelwood_itemState', 'pageSirrusSelenitic_itemState', 'pageWhiteSto_itemState', 'pageWhiteCha_itemState', 'pageFreebieRed_itemState', 'sirrus_bookState', 'sirrus_bookPages', 'atrus_bookState', 'atrus_bookPages',)
-    _tla_channel_vars: tuple[str, ...] = ('pLATTEMPT_MechanicalToMechanicalPuzATTEMPT', 'pLATTEMPT_StoneshipToStoneshipPuzATTEMPT', 'pLATTEMPT_ChannelwoodToChannelwoodPuzATTEMPT', 'pLATTEMPT_SeleniticToSeleniticPuzATTEMPT', 'pLATTEMPT_DunnyToDunnyPuzATTEMPT', 'pLREAD_MechanicalToClueMechanicalLOOK', 'pLREAD_StoneshipToClueStoneshipLOOK', 'pLREAD_ChannelwoodToClueChannelwoodLOOK', 'pLREAD_SeleniticToClueSeleniticLOOK', 'pLREAD_DunnyToFireplaceComboLOOK', 'pLREAD_NOTEToNoteClueLOOK', 'pLFLIP_DockToSwitchDockFLIP', 'pLFLIP_CabinToSwitchCabinFLIP', 'pLFLIP_ClockToSwitchClockFLIP', 'pLFLIP_GearsToSwitchGearsFLIP', 'pLFLIP_SpaceShipToSwitchSpaceShipFLIP', 'pLFLIP_GeneratorToSwitchGeneratorFLIP', 'pLFLIP_TreeToSwitchTreeFLIP', 'pLFLIP_PlanetariumToSwitchPlanetariumFLIP', 'pLREAD_IMAGERToTowerRevealedLOOK', 'pLGRABToHandsGRAB', 'pLDROPToHandsDROP', 'pLITEMCTL_SirrusMechanicalToPageSirrusMechanicalITEM_CTL', 'pLITEMCTL_SirrusStoneshipToPageSirrusStoneshipITEM_CTL', 'pLITEMCTL_SirrusChannelwoodToPageSirrusChannelwoodITEM_CTL', 'pLITEMCTL_SirrusSeleniticToPageSirrusSeleniticITEM_CTL', 'pLITEMCTL_WhiteStoToPageWhiteStoITEM_CTL', 'pLITEMCTL_WhiteChaToPageWhiteChaITEM_CTL', 'pLITEMCTL_FreebieRedToPageFreebieRedITEM_CTL', 'pLSIRRUS_ADDToSirrusPAGE_IN', 'pLATRUS_ADDToAtrusPAGE_IN',)
+    _tla_state_vars: tuple[str, ...] = ('pL_egoState', 'mechanicalPuz_puzzleState', 'stoneshipPuz_puzzleState', 'channelwoodPuz_puzzleState', 'seleniticPuz_puzzleState', 'dunnyPuz_puzzleState', 'clueMechanical_clueState', 'journalMechanical_clueState', 'clueStoneship_clueState', 'journalStoneship_clueState', 'clueChannelwood_clueState', 'journalChannelwood_clueState', 'clueSelenitic_clueState', 'journalSelenitic_clueState', 'fireplaceCombo_clueState', 'patternBook_clueState', 'noteClue_clueState', 'switchDock_switchState', 'switchCabin_switchState', 'switchClock_switchState', 'switchGears_switchState', 'switchSpaceShip_switchState', 'switchGenerator_switchState', 'switchTree_switchState', 'switchPlanetarium_switchState', 'towerRevealed_clueState', 'hands_handsState', 'pageSirrusMechanical_itemState', 'pageSirrusStoneship_itemState', 'pageSirrusChannelwood_itemState', 'pageSirrusSelenitic_itemState', 'pageWhiteSto_itemState', 'pageWhiteCha_itemState', 'pageFreebieRed_itemState', 'sirrus_bookState', 'sirrus_bookPages', 'atrus_bookState', 'atrus_bookPages',)
+    _tla_channel_vars: tuple[str, ...] = ('pLATTEMPT_MechanicalToMechanicalPuzATTEMPT', 'pLATTEMPT_StoneshipToStoneshipPuzATTEMPT', 'pLATTEMPT_ChannelwoodToChannelwoodPuzATTEMPT', 'pLATTEMPT_SeleniticToSeleniticPuzATTEMPT', 'pLATTEMPT_DunnyToDunnyPuzATTEMPT', 'pLREAD_MechanicalToClueMechanicalLOOK', 'pLREADJOURNAL_MechanicalToJournalMechanicalLOOK', 'pLREAD_StoneshipToClueStoneshipLOOK', 'pLREADJOURNAL_StoneshipToJournalStoneshipLOOK', 'pLREAD_ChannelwoodToClueChannelwoodLOOK', 'pLREADJOURNAL_ChannelwoodToJournalChannelwoodLOOK', 'pLREAD_SeleniticToClueSeleniticLOOK', 'pLREADJOURNAL_SeleniticToJournalSeleniticLOOK', 'pLREAD_DunnyToFireplaceComboLOOK', 'pLREADPATTERNToPatternBookLOOK', 'pLREAD_NOTEToNoteClueLOOK', 'pLFLIP_DockToSwitchDockFLIP', 'pLFLIP_CabinToSwitchCabinFLIP', 'pLFLIP_ClockToSwitchClockFLIP', 'pLFLIP_GearsToSwitchGearsFLIP', 'pLFLIP_SpaceShipToSwitchSpaceShipFLIP', 'pLFLIP_GeneratorToSwitchGeneratorFLIP', 'pLFLIP_TreeToSwitchTreeFLIP', 'pLFLIP_PlanetariumToSwitchPlanetariumFLIP', 'pLREAD_IMAGERToTowerRevealedLOOK', 'pLGRABToHandsGRAB', 'pLDROPToHandsDROP', 'pLITEMCTL_SirrusMechanicalToPageSirrusMechanicalITEM_CTL', 'pLITEMCTL_SirrusStoneshipToPageSirrusStoneshipITEM_CTL', 'pLITEMCTL_SirrusChannelwoodToPageSirrusChannelwoodITEM_CTL', 'pLITEMCTL_SirrusSeleniticToPageSirrusSeleniticITEM_CTL', 'pLITEMCTL_WhiteStoToPageWhiteStoITEM_CTL', 'pLITEMCTL_WhiteChaToPageWhiteChaITEM_CTL', 'pLITEMCTL_FreebieRedToPageFreebieRedITEM_CTL', 'pLSIRRUS_ADDToSirrusPAGE_IN', 'pLATRUS_ADDToAtrusPAGE_IN',)
 
     def __init__(self, seed: int = 0) -> None:
         super().__init__(seed=seed)
@@ -293,10 +333,15 @@ class NavMyst(Application):
         self._register('SeleniticPuz', PuzzleStub(AutoSolve=0))
         self._register('DunnyPuz', PuzzleStub(AutoSolve=0))
         self._register('ClueMechanical', Clue())
+        self._register('JournalMechanical', Clue())
         self._register('ClueStoneship', Clue())
+        self._register('JournalStoneship', Clue())
         self._register('ClueChannelwood', Clue())
+        self._register('JournalChannelwood', Clue())
         self._register('ClueSelenitic', Clue())
+        self._register('JournalSelenitic', Clue())
         self._register('FireplaceCombo', Clue())
+        self._register('PatternBook', Clue())
         self._register('NoteClue', Clue())
         self._register('SwitchDock', MarkerSwitch())
         self._register('SwitchCabin', MarkerSwitch())
@@ -363,10 +408,15 @@ class NavMyst(Application):
         self._channel(self._components['PL'], 'ATTEMPT_Selenitic', self._components['SeleniticPuz'], 'ATTEMPT')
         self._channel(self._components['PL'], 'ATTEMPT_Dunny', self._components['DunnyPuz'], 'ATTEMPT')
         self._channel(self._components['PL'], 'READ_Mechanical', self._components['ClueMechanical'], 'LOOK')
+        self._channel(self._components['PL'], 'READJOURNAL_Mechanical', self._components['JournalMechanical'], 'LOOK')
         self._channel(self._components['PL'], 'READ_Stoneship', self._components['ClueStoneship'], 'LOOK')
+        self._channel(self._components['PL'], 'READJOURNAL_Stoneship', self._components['JournalStoneship'], 'LOOK')
         self._channel(self._components['PL'], 'READ_Channelwood', self._components['ClueChannelwood'], 'LOOK')
+        self._channel(self._components['PL'], 'READJOURNAL_Channelwood', self._components['JournalChannelwood'], 'LOOK')
         self._channel(self._components['PL'], 'READ_Selenitic', self._components['ClueSelenitic'], 'LOOK')
+        self._channel(self._components['PL'], 'READJOURNAL_Selenitic', self._components['JournalSelenitic'], 'LOOK')
         self._channel(self._components['PL'], 'READ_Dunny', self._components['FireplaceCombo'], 'LOOK')
+        self._channel(self._components['PL'], 'READPATTERN', self._components['PatternBook'], 'LOOK')
         self._channel(self._components['PL'], 'READ_NOTE', self._components['NoteClue'], 'LOOK')
         self._channel(self._components['PL'], 'FLIP_Dock', self._components['SwitchDock'], 'FLIP')
         self._channel(self._components['PL'], 'FLIP_Cabin', self._components['SwitchCabin'], 'FLIP')
@@ -394,10 +444,15 @@ class NavMyst(Application):
         self._observe(self._components['PL'], 'PUZZLE_Selenitic', self._components['SeleniticPuz'])
         self._observe(self._components['PL'], 'PUZZLE_Dunny', self._components['DunnyPuz'])
         self._observe(self._components['PL'], 'CLUE_Mechanical', self._components['ClueMechanical'])
+        self._observe(self._components['PL'], 'JOURNAL_Mechanical', self._components['JournalMechanical'])
         self._observe(self._components['PL'], 'CLUE_Stoneship', self._components['ClueStoneship'])
+        self._observe(self._components['PL'], 'JOURNAL_Stoneship', self._components['JournalStoneship'])
         self._observe(self._components['PL'], 'CLUE_Channelwood', self._components['ClueChannelwood'])
+        self._observe(self._components['PL'], 'JOURNAL_Channelwood', self._components['JournalChannelwood'])
         self._observe(self._components['PL'], 'CLUE_Selenitic', self._components['ClueSelenitic'])
+        self._observe(self._components['PL'], 'JOURNAL_Selenitic', self._components['JournalSelenitic'])
         self._observe(self._components['PL'], 'CLUE_Dunny', self._components['FireplaceCombo'])
+        self._observe(self._components['PL'], 'PATTERNBOOK', self._components['PatternBook'])
         self._observe(self._components['PL'], 'BOOK_Sirrus', self._components['Sirrus'])
         self._observe(self._components['PL'], 'NOTE', self._components['NoteClue'])
         self._observe(self._components['PL'], 'SWITCH_Dock', self._components['SwitchDock'])
